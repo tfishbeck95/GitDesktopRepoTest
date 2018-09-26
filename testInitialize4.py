@@ -7,3 +7,5 @@ Created on Wed Sep 26 10:01:46 2018
 
 print('Hello World this is a test repository')
 print('This is the second commit')
+print('This is the second commit')
+print('This is the second commit')
