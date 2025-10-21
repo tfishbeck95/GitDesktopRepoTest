@@ -22,7 +22,9 @@ def get_device_info():
         "screen_height": 0,
         "screen_scale": 1,
         "total_disk_space": "Unknown",
-        "free_disk_space": "Unknown"
+        "free_disk_space": "Unknown",
+        "battery_level": "Unknown",
+        "battery_state": "Unknown"
     }
 
     try:
@@ -53,6 +55,23 @@ def get_device_info():
         bounds = main_screen.bounds()
         device_info["screen_width"] = float(bounds.size.width)
         device_info["screen_height"] = float(bounds.size.height)
+
+        # Enable battery monitoring and get battery info
+        current_device.setBatteryMonitoringEnabled_(True)
+        battery_level = float(current_device.batteryLevel())
+        battery_state = int(current_device.batteryState())
+
+        # Battery state: 0=Unknown, 1=Unplugged, 2=Charging, 3=Full
+        battery_states = {
+            0: "Unknown",
+            1: "Unplugged",
+            2: "Charging",
+            3: "Full"
+        }
+
+        if battery_level >= 0:
+            device_info["battery_level"] = f"{int(battery_level * 100)}%"
+        device_info["battery_state"] = battery_states.get(battery_state, "Unknown")
 
         # Get disk space info
         NSFileManager = ObjCClass('NSFileManager')
@@ -95,6 +114,10 @@ def display_current_device(device_info):
         if device_info["total_disk_space"] != "Unknown":
             print(f"Total Storage: {device_info['total_disk_space']}")
             print(f"Free Storage: {device_info['free_disk_space']}")
+
+        if device_info["battery_level"] != "Unknown":
+            print(f"Battery Level: {device_info['battery_level']}")
+            print(f"Battery State: {device_info['battery_state']}")
     else:
         print(f"Platform: {platform.system()}")
         print(f"Platform Version: {platform.version()}")
