@@ -29,18 +29,12 @@ def get_device_info():
         # Try to import Pythonista-specific modules
         import console
         device_info["is_pythonista"] = True
-
-        # Get screen dimensions
-        screen_size = console.get_screen_size()
-        device_info["screen_width"] = screen_size[0]
-        device_info["screen_height"] = screen_size[1]
-
     except ImportError:
         pass
 
     try:
         # Try to use objc_util for more detailed iOS info
-        from objc_util import ObjCClass, nsurl
+        from objc_util import ObjCClass
 
         UIDevice = ObjCClass('UIDevice')
         current_device = UIDevice.currentDevice()
@@ -48,11 +42,17 @@ def get_device_info():
         # Get device model and iOS version
         device_info["model"] = str(current_device.model())
         device_info["ios_version"] = str(current_device.systemVersion())
+        device_info["is_pythonista"] = True
 
-        # Get screen scale
+        # Get screen scale and dimensions
         UIScreen = ObjCClass('UIScreen')
         main_screen = UIScreen.mainScreen()
         device_info["screen_scale"] = float(main_screen.scale())
+
+        # Get screen bounds (in points, not pixels)
+        bounds = main_screen.bounds()
+        device_info["screen_width"] = float(bounds.size.width)
+        device_info["screen_height"] = float(bounds.size.height)
 
         # Get disk space info
         NSFileManager = ObjCClass('NSFileManager')
