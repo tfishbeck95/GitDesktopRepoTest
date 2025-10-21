@@ -58,20 +58,33 @@ def get_device_info():
 
         # Enable battery monitoring and get battery info
         current_device.setBatteryMonitoringEnabled_(True)
-        battery_level = float(current_device.batteryLevel())
-        battery_state = int(current_device.batteryState())
 
+        # Get battery level (returns -1.0 if battery state is UIDeviceBatteryStateUnknown)
+        try:
+            battery_level = float(current_device.batteryLevel())
+            if battery_level >= 0:
+                device_info["battery_level"] = f"{int(battery_level * 100)}%"
+        except:
+            pass
+
+        # Get battery state
         # Battery state: 0=Unknown, 1=Unplugged, 2=Charging, 3=Full
-        battery_states = {
-            0: "Unknown",
-            1: "Unplugged",
-            2: "Charging",
-            3: "Full"
-        }
+        try:
+            # ObjCInstance sometimes needs to be accessed as an integer
+            # We'll compare directly with the enum values
+            battery_state = current_device.batteryState()
 
-        if battery_level >= 0:
-            device_info["battery_level"] = f"{int(battery_level * 100)}%"
-        device_info["battery_state"] = battery_states.get(battery_state, "Unknown")
+            # Create mapping - keys can be ObjCInstance or int
+            if battery_state == 0 or str(battery_state) == "0":
+                device_info["battery_state"] = "Unknown"
+            elif battery_state == 1 or str(battery_state) == "1":
+                device_info["battery_state"] = "Unplugged"
+            elif battery_state == 2 or str(battery_state) == "2":
+                device_info["battery_state"] = "Charging"
+            elif battery_state == 3 or str(battery_state) == "3":
+                device_info["battery_state"] = "Full"
+        except:
+            pass
 
         # Get disk space info
         NSFileManager = ObjCClass('NSFileManager')
